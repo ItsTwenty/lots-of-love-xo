@@ -1,3 +1,3 @@
-import {env} from 'cloudflare:workers';
-import {identity,respond,checkOrigin} from '@/lib/server';
-export async function POST(req:Request){const {owner,cookie}=identity(req);try{checkOrigin(req);if(!env.BUCKET)throw Error('Uploads are temporarily unavailable.');if(Number(req.headers.get('content-length')||0)>5500000)throw Error('Please choose an image under 5 MB.');const form=await req.formData();const f=form.get('file');if(!(f instanceof File)||f.size>5000000||!['image/jpeg','image/png','image/webp'].includes(f.type))throw Error('Choose a JPG, PNG or WebP under 5 MB.');const bytes=await f.arrayBuffer();const h=new Uint8Array(bytes);const valid=(f.type==='image/jpeg'&&h[0]===255&&h[1]===216)||(f.type==='image/png'&&h[0]===137&&h[1]===80)||(f.type==='image/webp'&&h[0]===82&&h[8]===87);if(!valid)throw Error('This file is not a supported image.');const id=crypto.randomUUID();await env.BUCKET.put(id,bytes,{httpMetadata:{contentType:f.type},customMetadata:{owner}});return respond({url:'/api/media/'+id},cookie);}catch(e){return respond({error:e instanceof Error?e.message:'Upload failed.'},cookie,400);}}
+export async function POST() {
+  return Response.json({ error: "Uploads are handled in the browser in this Vercel preview." }, { status: 410 });
+}
